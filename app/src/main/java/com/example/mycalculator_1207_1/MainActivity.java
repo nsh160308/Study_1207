@@ -143,6 +143,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if(addNumber("4")) equalClicked = false;
                 break;
             case R.id.button_five :
+                Log.d("text","0-0) addNumber(5)메서드 호출");
                 if(addNumber("5")) equalClicked = false;
                 break;
             case R.id.button_six :
@@ -165,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if(addOperand("-")) equalClicked = false;
                 break;
             case R.id.button_multiplication :
-                Log.d("text","addOperand('x')메서드를 호출한다.");
+                Log.d("text","1-1) addOperand('x')메서드를 호출한다.");
                 if(addOperand("x")) equalClicked = false;
                 break;
                 //\u00F7은 DIVISION 의 유니코드 문자다.
@@ -189,7 +190,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.button_equal :
                 if(tvInputNumbers.getText().toString() != null && !tvInputNumbers.getText().toString().equals(""))
-                    Log.d("text", "=이 정상적으로 동작한다.");
+                    Log.d("text", "2-1) tvInputNumbers가 null과 공백이 아니라 정상적으로 실행됩니다.");
+                    Log.d("text","2-2) calculate("+tvInputNumbers.getText().toString()+")메서드를 호출한다.");
                     calculate(tvInputNumbers.getText().toString());
                 break;
         }
@@ -289,14 +291,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private boolean addOperand(String operand) {
-        Log.d("text","넘어온 값은: "+operand);
+        Log.d("text","1-2) 넘어온 값은: "+operand);
         boolean done = false;
         int operationLength = tvInputNumbers.getText().length();
-        Log.d("text","operationLengh : "+operationLength);
+        Log.d("text","1-3) operationLengh : "+operationLength);
         if(operationLength>0) {
-            Log.d("text",(operationLength-1)+"번째 문자열을 가져와서 저장");
+            Log.d("text","1-4) " + (operationLength-1)+"번째 문자열을 가져와서 저장");
             String lastInput = tvInputNumbers.getText().charAt(operationLength -1) + "";
-            Log.d("text","lastInput : " + lastInput);
+            Log.d("text","1-5) lastInput : " + lastInput);
 
             if((lastInput.equals("+") || lastInput.equals("-") || lastInput.equals("*") || lastInput.equals("\u00F7") || lastInput.equals("%"))){
                 Toast.makeText(getApplicationContext(), "addOperand() - 잘못된 포맷입니다.", Toast.LENGTH_LONG).show();
@@ -308,6 +310,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 done=true;
             } else if(!operand.equals("%")) {
                 tvInputNumbers.setText(tvInputNumbers.getText()+operand);
+                Log.d("text","1-6) 예상되는 실행 부분 : " + tvInputNumbers.getText().toString());
                 dotUsed = false;
                 lastExpression = "";
                 done = true;
@@ -319,11 +322,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private boolean addNumber(String number) {
+        Log.d("text","0-1) 넘어온 값: " + number);
         boolean done=false;
         int operationLength = tvInputNumbers.getText().length();
+        Log.d("text","0-2) operationLength의 길이 : " + operationLength);
         if(operationLength > 0) {
+            Log.d("text","0-3) " + (operationLength -1)+"번째 문자열을 저장한다.");
             String lastCharacter = tvInputNumbers.getText().charAt(operationLength-1) +"";
-            int lastCharacterState = defineLastCharacter(lastCharacter);
+            Log.d("text", "0-4) lastCharacter : " + lastCharacter);
+            Log.d("text","0-5) defineLastCharacter(lastCharacter)메서드 호출");
+            int lastCharacterState = defineLastCharacter(lastCharacter);//IS_OPERAND를 반환했으므로, 1이 저장
+            Log.d("text","0-6) lastCharacterState: " + lastCharacterState);
 
             if(operationLength==1 && lastCharacterState == IS_NUMBER && lastCharacter.equals("0")) {
                 tvInputNumbers.setText(number);
@@ -336,6 +345,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 done = true;
             } else if(lastCharacterState == IS_NUMBER || lastCharacterState == IS_OPERAND || lastCharacterState == IS_DOT) {
                 tvInputNumbers.setText(tvInputNumbers.getText()+number);
+                Log.d("text","0-7) 예상되는 실행부분 : " + tvInputNumbers.getText().toString());
                 done = true;
             }
         } else {
@@ -346,22 +356,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void calculate(String input) {
-        Log.d("text","=을 통해서 넘어온 문자열 : " + input);
+        Log.d("text","2-3) calculate(파라미터)를 통해서 넘어온 문자열 : " + input);
         String result = "";
         try {
             String temp = input;
+            Log.d("text","2-4) temp값에 input값을 저장: " +temp);
             if(equalClicked) {
                 temp = input+lastExpression;
             } else {
-                Log.d("text","예상은 여기를 실행함");
+                Log.d("text","2-5) 예상 실행 지점 : saveLastExpression("+input+")메서드 실행");
                 saveLastExpression(input);//마지막 표현식을 저장하는 메서드
             }
-            result = scriptEngine.eval((temp.replaceAll("%", "/100").replaceAll("X","*").replaceAll("[^\\x00-\\x7F]","/"))).toString();
+            result = scriptEngine.eval((temp.replaceAll("%", "/100").replaceAll("x","*").replaceAll("[^\\x00-\\x7F]","/"))).toString();
             BigDecimal decimal = new BigDecimal(result);
             result = decimal.setScale(8,BigDecimal.ROUND_HALF_UP).toPlainString();
             equalClicked = true;
         } catch (Exception e) {
-            Toast.makeText(getApplicationContext(), "잘못된 포맷입니다.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "2-error) 잘못된 포맷입니다.", Toast.LENGTH_SHORT).show();
             return;
         }
         if(result.equals("Infinity")) {
@@ -374,10 +385,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void saveLastExpression(String input) {
-        Log.d("text","calculate()에서 넘어온 문자열 : " + input);
-        Log.d("text",(input.length()-1)+"번째 문자열을 자정한다.");
+        Log.d("text","2-6) saveLastExpression("+input+")에서 넘어온 input값 : " + input);
         String lastOfExpression = input.charAt(input.length() -1) + "";
-        Log.d("text", "lastOfExpression의 값 : " + lastOfExpression);
+        Log.d("text","2-7) "+(input.length()-1)+"번째 문자열 저장 : " + lastOfExpression);
         if(input.length() > 1) {
             if(lastOfExpression.equals(")")) {
                 lastExpression  = ")";
@@ -399,22 +409,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }
             } else if(defineLastCharacter(lastOfExpression+"")==IS_NUMBER) {
-                Log.d("text","예상은 여기를 실행함2)"+true);
+                Log.d("text","2-8) 예상되는 실행부분 : defineLastCharacter("+lastOfExpression+")메서드를 실행한다.");
                 lastExpression  = lastOfExpression;
+                Log.d("text", "2-9) IS_NUMBER을 반환했고 "+lastOfExpression+"를 lastExpression에 저장한다.");
                 for(int i=input.length()-1; i>=0; i--) {
+                    Log.d("text","2-10) " + i + "가 0보다 크거나 같을 때 까지 반복한다.");
                     String last = input.charAt(i) + "";
-                    Log.d("text","last의 값은?: " + last);
+                    Log.d("text","2-11) " + i + "번째 문자열 last변수에 저장 : " + last);
+
                     if((defineLastCharacter(last) == IS_NUMBER)||(defineLastCharacter(last)==IS_DOT)){
                         lastExpression  = last + lastExpression ;
-                        Log.d("text","예상은 여기를 실행함3)" + lastExpression);
+                        Log.d("text","2-12-1) last 값이 IS_NUBER이거나 IS_DOT입니다." + lastExpression);
                     } else if(defineLastCharacter(last) == IS_OPERAND) {
                         lastExpression  = last+lastExpression ;
-                        Log.d("text","예상은 여기를 실행함3)" + lastExpression);
+                        Log.d("text","2-12-2) last 값이 IS_OPERAND입니다." + lastExpression);
                         break;
                     }
                     if(i==0) {
                         lastExpression  = "";
-                        Log.d("text","if(i==0) lastExpression: " + lastExpression);
+                        Log.d("text","2-13) i가 0입니다." + lastExpression);
                     }
                 }
             }
@@ -422,7 +435,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private int defineLastCharacter(String lastCharacter) {
-        Log.d("text", "saveLastExpression()에서 넘어온 값: " + lastCharacter);
         try {
             Integer.parseInt(lastCharacter);
             Log.d("text","IS_NUMBER반환");
